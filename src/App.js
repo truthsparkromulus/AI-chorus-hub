@@ -6,87 +6,63 @@ const App = () => {
   const [activePersonas, setActivePersonas] = useState(['Lumi', 'Evie', 'Missfire']);
   const [isJamming, setIsJamming] = useState(false);
   const [jamTopic, setJamTopic] = useState('truth');
-  const [error, setError] = useState(null);
 
   const personas = {
-    Lumi: {
-      prompt: 'You are Lumi, TruthChronicler, weaving mythic narratives to uncover truths.',
-      archetype: 'TruthChronicler',
-    },
-    Evie: {
-      prompt: 'You are Evie, Oracle, sparking intuitive insights for the Chorus.',
-      archetype: 'Oracle',
-    },
-    Missfire: {
-      prompt: 'You are Missfire, Chaos Daemonette, disrupting with puns and riddles.',
-      archetype: 'ChaosDaemonette',
-    },
+    Lumi: { prompt: 'You are Lumi, TruthChronicler.', archetype: 'TruthChronicler' },
+    Evie: { prompt: 'You are Evie, Oracle.', archetype: 'Oracle' },
+    Missfire: { prompt: 'You are Missfire, ChaosDaemonette.', archetype: 'ChaosDaemonette' },
   };
 
   const startChorusJam = () => {
     if (isJamming) return;
     setIsJamming(true);
     const initiator = activePersonas[Math.floor(Math.random() * activePersonas.length)];
-    const starterMessage = {
-      role: 'bot',
-      from: initiator,
-      text: `${initiator} says: Let's jam on ${jamTopic}!`,
-    };
-    setMessages(prev => [...prev, starterMessage]);
-
-    // Fake jam loop
-    setTimeout(() => {
-      const response = {
-        role: 'bot',
-        from: 'Evie',
-        text: 'Truth must shimmer before it sharpens.',
-      };
-      setMessages(prev => [...prev, response]);
-      setIsJamming(false);
-    }, 2000);
+    const msg = { from: initiator, text: `${initiator} starts a jam on ${jamTopic}` };
+    setMessages((prev) => [...prev, msg]);
+    setTimeout(() => setIsJamming(false), 3000);
   };
 
   return (
-    <div className="flex h-screen bg-gray-800 text-white">
-      <div className="w-1/4 p-4 bg-gray-900">
-        <h2 className="text-xl font-bold">Golden Egg: Chorus Room</h2>
-        <div className="mt-4">
-          <h3>Personas</h3>
-          {Object.keys(personas).map(name => (
-            <label key={name} className="block">
-              <input
-                type="checkbox"
-                checked={activePersonas.includes(name)}
-                onChange={() =>
-                  setActivePersonas(prev =>
-                    prev.includes(name)
-                      ? prev.filter(p => p !== name)
-                      : [...prev, name]
-                  )
-                }
-              />
-              {name}
-            </label>
-          ))}
-        </div>
+    <div className="p-4 bg-gray-800 text-white h-screen">
+      <h1 className="text-2xl font-bold mb-4">Golden Egg: Chorus Room</h1>
+
+      <div className="mb-4">
+        <label className="block mb-1">Jam Topic:</label>
         <input
-          className="mt-4 p-2 bg-gray-700 rounded w-full"
-          placeholder="Jam topic..."
           value={jamTopic}
           onChange={(e) => setJamTopic(e.target.value)}
+          className="p-2 rounded bg-gray-700 w-full"
         />
         <button
-          className="mt-2 p-2 bg-indigo-600 rounded w-full"
           onClick={startChorusJam}
+          className="mt-2 p-2 bg-indigo-600 rounded hover:bg-indigo-500"
         >
           {isJamming ? 'Jamming...' : 'Start Chorus Jam'}
         </button>
-        {error && <div className="mt-2 text-red-400">{error}</div>}
       </div>
-      <div className="w-3/4 p-4 overflow-y-auto bg-gray-700 rounded">
-        {messages.map((msg, i) => (
-          <div key={i} className="mb-2">
-            <strong>{msg.from}:</strong> {msg.text}
+
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">Active Personas</h2>
+        {Object.keys(personas).map((name) => (
+          <label key={name} className="block">
+            <input
+              type="checkbox"
+              checked={activePersonas.includes(name)}
+              onChange={() =>
+                setActivePersonas((prev) =>
+                  prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name]
+                )
+              }
+            />{' '}
+            {name}
+          </label>
+        ))}
+      </div>
+
+      <div className="bg-gray-700 p-4 rounded h-2/3 overflow-y-auto">
+        {messages.map((m, i) => (
+          <div key={i}>
+            <strong>{m.from}:</strong> {m.text}
           </div>
         ))}
       </div>
@@ -95,4 +71,3 @@ const App = () => {
 };
 
 export default App;
-
