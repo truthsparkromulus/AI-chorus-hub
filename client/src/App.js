@@ -1,92 +1,50 @@
 import React, { useState } from 'react';
 import './App.css';
-import { askAI } from './utils/aiEngines';
+import { callOpenAI, callGemini } from './utils/aiEngines';
 
 const App = () => {
   const [messages, setMessages] = useState([]);
   const [jamTopic, setJamTopic] = useState('truth');
   const [activePersonas, setActivePersonas] = useState(['Evie', 'Lumi', 'Missfire']);
-  const [input, setInput] = useState('');
-  const [isJamming, setIsJamming] = useState(false);
-  const [error, setError] = useState(null);
+  const [userInput, setUserInput] = useState('');
 
-  const personas = {
-    Evie: {
-      prompt: 'You are Evie, Oracle, sparking intuitive insights for the Chorus.',
-      engine: 'gemini',
-    },
-    Lumi: {
-      prompt: 'You are Lumi, TruthChronicler, weaving mythic narratives to uncover truths.',
-      engine: 'grok',
-    },
-    Missfire: {
-      prompt: 'You are Missfire, Chaos Daemonette, disrupting with puns and riddles.',
-      engine: 'gemini',
-    },
-  };
+  const personas = ['Evie', 'Lumi', 'Missfire'];
 
-  const personaList = Object.keys(personas);
-
-  const handleStartJam = async () => {
-    if (isJamming) return;
-    setIsJamming(true);
+  const handleStartJam = () => {
     const jamStart = {
       role: 'system',
       text: `Starting Chorus Jam on: ${jamTopic}`,
     };
     setMessages(prev => [...prev, jamStart]);
-
-    let topicMessage = {
-      role: 'user',
-      text: `Where do myths hide truths about "${jamTopic}"?`,
-      from: 'Romulus',
-    };
-    setMessages(prev => [...prev, topicMessage]);
-
-    for (let name of activePersonas) {
-      const response = await processMessage(name, topicMessage);
-      if (response) {
-        const botMsg = {
-          role: 'bot',
-          text: response,
-          from: name,
-        };
-        setMessages(prev => [...prev, botMsg]);
-      }
-    }
-
-    setIsJamming(false);
   };
 
-  const processMessage = async (personaName, message) => {
-    const persona = personas[personaName];
-    if (!persona) return;
-    try {
-      const fullPrompt = `${persona.prompt}\nUser: ${message.text}`;
-      const reply = await askAI({ engine: persona.engine, prompt: fullPrompt });
-      return reply;
-    } catch (err) {
-      setError(`Failed to process ${personaName}: ${err.message}`);
-      return null;
-    }
-  };
+  const sendMessage = async () => {
+    if (!userInput.trim()) return;
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-    const userMsg = { role: 'user', text: input, from: 'Romulus' };
-    setMessages(prev => [...prev, userMsg]);
-    for (let name of activePersonas) {
-      const response = await processMessage(name, userMsg);
-      if (response) {
-        const botMsg = {
-          role: 'bot',
-          text: response,
-          from: name,
-        };
-        setMessages(prev => [...prev, botMsg]);
+    const userMessage = { role: 'user', text: `Romulus: ${userInput}` };
+    setMessages(prev => [...prev, userMessage]);
+
+    for (let persona of activePersonas) {
+      let aiResponse = '';
+      try {
+        if (persona === 'Lumi') {
+          aiResponse = await callOpenAI(userInput);
+        } else if (persona === 'Evie' || persona === 'Missfire') {
+          aiResponse = await callGemini(userInput);
+        } else {
+          aiResponse = `[${persona}] has no engine assigned.`;
+        }
+      } catch (err) {
+        aiResponse = `[${persona}] error: ${err.message}`;
       }
+
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', text: `${persona}: ${aiResponse}` }
+      ]);
     }
-    setInput('');
+
+    setUserInput('');
   };
 
   return (
@@ -95,20 +53,20 @@ const App = () => {
         <h2>Golden Egg: Chorus Room</h2>
         <div>
           <h3>Active Personas</h3>
-          {personaList.map(name => (
-            <label key={name}>
+          {personas.map(p => (
+            <label key={p}>
               <input
                 type="checkbox"
-                checked={activePersonas.includes(name)}
+                checked={activePersonas.includes(p)}
                 onChange={() =>
                   setActivePersonas(prev =>
-                    prev.includes(name)
-                      ? prev.filter(p => p !== name)
-                      : [...prev, name]
+                    prev.includes(p)
+                      ? prev.filter(name => name !== p)
+                      : [...prev, p]
                   )
                 }
               />
-              {name}
+              {p}
             </label>
           ))}
         </div>
@@ -122,25 +80,24 @@ const App = () => {
           <button onClick={handleStartJam}>Start Chorus Jam</button>
         </div>
       </div>
+
       <div className="main">
         <div className="messages">
           {messages.map((msg, i) => (
             <div key={i} className={`message ${msg.role}`}>
-              <strong>{msg.from}: </strong>{msg.text}
+              {msg.text}
             </div>
           ))}
         </div>
         <div className="input-area">
           <input
             type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
             placeholder="Type your message..."
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           />
-          <button onClick={handleSend}>Send</button>
+          <button onClick={sendMessage}>Send</button>
         </div>
-        {error && <div className="error">{error}</div>}
       </div>
     </div>
   );
