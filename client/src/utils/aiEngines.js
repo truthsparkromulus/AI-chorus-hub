@@ -1,59 +1,32 @@
-// aiEngines.js
+export const callOpenAI = async (prompt) => {
+  const key = import.meta.env.VITE_OPENAI_API_KEY;
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${key}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4', // Change to 'gpt-3.5-turbo' if you’re not using GPT-4
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.8,
+    })
+  });
 
-const apiKeys = {
-  openai: process.env.REACT_APP_OPENAI_KEY,
-  gemini: process.env.REACT_APP_GEMINI_KEY,
-  grok: process.env.REACT_APP_GROK_KEY,
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '[No response]';
 };
 
-export const askAI = async ({ engine, prompt }) => {
-  if (!engine || !prompt) throw new Error("Missing engine or prompt.");
+export const callGemini = async (prompt) => {
+  const key = import.meta.env.VITE_GEMINI_API_KEY;
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
 
-  if (engine === "chatgpt") {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKeys.openai}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
-    });
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "[no response]";
-  }
-
-  if (engine === "gemini") {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKeys.gemini}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    });
-    const data = await response.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "[no response]";
-  }
-
-  if (engine === "grok") {
-    const response = await fetch("https://api.x.ai/grok/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKeys.grok}`,
-      },
-      body: JSON.stringify({
-        model: "grok-1",
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "[no response]";
-  }
-
-  return "[unknown engine]";
+  const data = await response.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '[No response]';
 };
-
