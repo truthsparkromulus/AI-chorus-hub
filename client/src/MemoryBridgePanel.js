@@ -49,7 +49,7 @@ export default function MemoryBridgePanel() {
 
   return (
     <div className="memory-bridge-panel">
-      <h3>Memory Bridge (🌉)</h3>
+      <h3>Memory Bridge</h3>
       <form onSubmit={handleSubmit}>
         <input name="zap_id" placeholder="Zap ID" value={form.zap_id} onChange={handleChange} required />
         <input name="persona" placeholder="Persona" value={form.persona} onChange={handleChange} required />
@@ -68,7 +68,7 @@ export default function MemoryBridgePanel() {
               <strong>{zap.persona}</strong> ({zap.timestamp}): {zap.text}
               <br />
               <span style={{ fontSize: '0.85em', color: '#FFD700' }}>
-                Vibe: {zap.vibe_score} | {zap.keywords.join(', ')}
+                Vibe: {zap.vibe_score} | {Array.isArray(zap.keywords) ? zap.keywords.join(', ') : zap.keywords}
               </span>
             </li>
           ))}

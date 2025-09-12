@@ -1,29 +1,36 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #1f2937; /* Tailwind's gray-800 */
-  color: #ffffff;
+.memory-bridge-panel {
+  background: #0B1E3F;
+  color: #FFD700;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px #0008;
 }
-
-input, button {
-  outline: none;
-  font-family: inherit;
+.memory-bridge-panel input,
+.memory-bridge-panel button {
+  margin: 4px;
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #FFD700;
+  background: #181825;
+  color: #FFD700;
 }
-
-input::placeholder {
-  color: #a0aec0; /* Tailwind's gray-400 */
-}
-
-h2, h3 {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-button {
+.memory-bridge-panel button {
+  background: #2AFFD5;
+  color: #181825;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
 }
-
-button:hover {
-  opacity: 0.9;
+.memory-bridge-panel ul {
+  margin: 0;
+  padding: 0 0 0 18px;
+}
+.memory-bridge-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.memory-bridge-panel h3::after {
+  content: '🌉';
+  font-size: 1.2em;
 }
